@@ -25,7 +25,7 @@ export const EditableString = ({
         <Button onClick={() => onSave(v)} disabled={!validate(v)}>
           Save
         </Button>
-        <Button bg="gray" onClick={onCancel}>
+        <Button bg="#495057" onClick={onCancel}>
           Cancel
         </Button>
       </GridCol>

@@ -33,7 +33,7 @@ export const EditableBrKey = ({
           >
             Save
           </Button>
-          <Button bg="gray" onClick={onCancel}>
+          <Button bg="#495057" onClick={onCancel}>
             Cancel
           </Button>
           <Button
