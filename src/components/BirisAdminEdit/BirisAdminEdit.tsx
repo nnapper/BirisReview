@@ -1,7 +1,7 @@
 import { EditableField, LinkBridgeField } from '../../components/EditableField'
 import { useEffect, useState } from 'react'
 import { formatOraDate } from '../../utils/ctutils'
-import type { BirisFileInfo } from '../../features/pdf/pdfSlice'
+import type { BirisFileInfo } from '../../features/pdf/pdfApi'
 import {
   useLazyCheckInspKeyQuery,
   type CheckInspKeyParams,
@@ -118,7 +118,7 @@ export const BirisAdminEdit = (props: BirisAdminEditProps) => {
     'string',
     'string', //6
     'string',
-    'readonly',
+    'docType',
     'readonly',
   ]
 
