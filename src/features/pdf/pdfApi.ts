@@ -3,7 +3,6 @@ import {
   fetchBaseQuery,
 } from '@reduxjs/toolkit/query/react'
 import { appAuth, appServer } from '../../config'
-import type { BirisFileInfo } from './pdfSlice'
 import { serialize } from '../../utils/ctutils'
 
 export type CheckInspKeyParams = {
@@ -51,6 +50,26 @@ type DocDescriptorVM = {
   createdDate: Date
 }
 
+export type BirisFileInfo = {
+  brKeys: string[]
+  contractNum: string
+
+  dirId: number
+  docId: number
+  docTypeId: number
+
+  filename: string
+  pageDesc: string
+  docDate: string
+  createdDate: string
+  pageNum: number
+  pageCount: number
+  pageSuffix: string
+  snumber: string
+
+  inspKey: string | null
+}
+
 
 
 type UpdateDocBridgesFieldParams = {
@@ -68,15 +87,17 @@ export const pdfApi = createApi({
       headers.set('x-access-token', '' + token)
     },
   }),
+  tagTypes: ['docs'],
   endpoints: builder => ({
-    fetchPdfs: builder.query<BirisFileInfo[], void>({
+    fetchDocs: builder.query<BirisFileInfo[], void>({
       query: () => {
         return {
           url: '/admin/docsToBeReviewed',
         }
       },
+      providesTags: ['docs'],
     }),
-    loadPdf: builder.query<string, number>({
+    loadDoc: builder.query<string, number>({
       query: (docId) => { 
         return {
           url: `/biris/pdfByIdForAdmin?id=${docId}`,
@@ -111,11 +132,12 @@ export const pdfApi = createApi({
     updateDocField: builder.mutation<DocDescriptorVM, UpdateDocFieldParams>({
       query: (vm) => { 
         return {
-          url: '/admin/updateDocField',
+          url: '/admin/updateDocFieldForApproval',
           method: 'POST',
           body: vm
         }
-      }
+      },
+      invalidatesTags: ['docs'],
     }),
     updateDocBridgesField: builder.mutation<DocDescriptorVM, UpdateDocBridgesFieldParams>({
       query: (vm) => { 
@@ -124,17 +146,29 @@ export const pdfApi = createApi({
           method: 'POST',
           body: vm
         }
-      }
+      },
+      invalidatesTags: ['docs'],
+    }),
+    approveDoc: builder.mutation<DocDescriptorVM, UpdateDocFieldParams>({
+      query: (vm) => { 
+        return {
+          url: '/admin/updateDocField',
+          method: 'POST',
+          body: vm
+        }
+      },
+      invalidatesTags: ['docs'],
     }),
   }),
 })
 
 export const {
-  useFetchPdfsQuery,
-  useLoadPdfQuery,
+  useFetchDocsQuery,
+  useLoadDocQuery,
   useDocTypesQuery,
   useLazyCheckInspKeyQuery,
   useLazySearchQuery,
   useUpdateDocFieldMutation,
-  useUpdateDocBridgesFieldMutation
+  useUpdateDocBridgesFieldMutation,
+  useApproveDocMutation
 } = pdfApi
