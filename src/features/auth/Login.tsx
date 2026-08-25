@@ -7,8 +7,7 @@ import { appAuth, userAuth } from './../../config'
 import { useNavigate } from 'react-router'
 import { useEffect, useState } from 'react'
 import '../../styles/App.css'
-import { useFetchPdfsQuery } from '../pdf/pdfApi'
-import { setPdfs } from '../pdf/pdfSlice'
+import { useFetchDocsQuery } from '../pdf/pdfApi'
 import { app } from '../../config'
 import { type RootState } from '../../store'
 
@@ -68,26 +67,15 @@ export const Login = () => {
     authorizeUser()
   }
 
-  const { data: pdfsData } = useFetchPdfsQuery()
-  useEffect(() => {
-    if (pdfsData) {
-      dispatch(setPdfs({ pdfs: pdfsData }))
-      console.log('updating pdfs to', pdfsData)
-    }
+  // ego loading a relatively small amount of pdfs
+  useFetchDocsQuery()
 
-    const appAuthToken = localStorage.getItem(appAuth)
-    if (appAuthToken) {
-      console.log('app auth is', appAuthToken, 'token is', token)
-      dispatch(setAuthUser({ token: appAuthToken }))
-    }
-  }, [pdfsData, dispatch])
+  const appAuthToken = localStorage.getItem(appAuth)
+  if (appAuthToken) dispatch(setAuthUser({ token: appAuthToken }))
 
   const token = useSelector((state: RootState) => state.auth.token)
   useEffect(() => {
-    if (token) {
-      console.log('auto login')
-      navigate('/pdf')
-    }
+    if (token) navigate('/pdf')
   }, [token])
 
   return (
