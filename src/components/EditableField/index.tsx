@@ -4,6 +4,7 @@ import { EditableString } from './EditableString'
 import { EditableBrKey } from './EditableBrKey'
 import { ReadOnlyField } from './ReadOnlyField'
 import { LinkBridgeField } from './LinkBridgeField'
+import { EditableDocType } from './EditableDocType'
 
 type EditableFieldProps = {
   value: string
@@ -38,6 +39,8 @@ export const EditableField = (props: EditableFieldProps) => {
           <EditableCalendar {...compProps} />
         : dataType === 'brKey' ?
           <EditableBrKey key={value} {...compProps} />
+        : dataType === 'docType' ?
+          <EditableDocType key={value} {...compProps} />
         : <div>I dunno</div>
       : dataType === 'readonly' ?
         <ReadOnlyField
