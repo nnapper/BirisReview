@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { DocTypeSelection2 } from './DocTypeSelection'
+import { DocTypeSelection3 } from './DocTypeSelection'
 import { Button, Grid, GridCol } from '@mantine/core'
 
 export const EditableDocType = ({
@@ -15,7 +15,7 @@ export const EditableDocType = ({
     <Grid>
       <GridCol span={4}>{label}:</GridCol>
       <GridCol span={6}>
-        <DocTypeSelection2
+        <DocTypeSelection3
           docTypeId={+value}
           onSelected={newVal => setV(newVal != null ? newVal.id : -1)}
         />
@@ -23,13 +23,14 @@ export const EditableDocType = ({
       <GridCol span={2}>
         <Button
           onClick={() => {
+            console.log('v is', v)
             onSave(v + '')
           }}
           disabled={!validate(v + '')}
         >
           Save
         </Button>
-        <Button bg="gray" onClick={onCancel}>
+        <Button bg="#495057" onClick={onCancel}>
           Cancel
         </Button>
       </GridCol>
