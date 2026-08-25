@@ -1,25 +1,16 @@
 import { Button } from '@mantine/core'
 import {
-  pdfApi,
-  useFetchPdfsQuery,
-  useLoadPdfQuery,
+  useApproveDocMutation,
+  useFetchDocsQuery,
+  useLoadDocQuery,
   useUpdateDocBridgesFieldMutation,
   useUpdateDocFieldMutation,
 } from './pdfApi'
-import { useDispatch, useSelector } from 'react-redux'
-import {
-  approvePdf,
-  updatePdf,
-  type BirisFileInfo,
-  incrementIndex,
-  rejectPdf,
-} from './pdfSlice'
-import type { RootState } from '../../store'
+import { type BirisFileInfo } from './pdfApi'
 import { skipToken } from '@reduxjs/toolkit/query'
 import { BirisAdminEdit } from '../../components/BirisAdminEdit/BirisAdminEdit'
 import { formatOra2Date } from '../../utils/ctutils'
-
-// TODO: SET UP GRID FOR BIRIS ADMIN EDIT
+import { useEffect, useState } from 'react'
 
 type PdfViewerProps = {
   url: string | undefined
@@ -32,67 +23,58 @@ const PdfViewer = ({ url }: PdfViewerProps) => {
 }
 
 export const PdfApproval = () => {
-  const { data: pdfs } = useFetchPdfsQuery()
-  const index = useSelector((state: RootState) => state.pdf.index)
+  const { data: pdfs } = useFetchDocsQuery()
+  const [index, setIndex] = useState<number>(0)
 
-  console.log('list of pdfs is', pdfs)
+  useEffect(() => {
+    console.log('pdfs have changed', pdfs?.length)
+  }, [pdfs])
 
   const pdf =
     pdfs && pdfs.length != 0 && index < pdfs.length ? pdfs[index] : null
-  const { data: url } = useLoadPdfQuery(pdf ? pdf.docId : skipToken)
-
-  const dispatch = useDispatch()
-  const changePdf = (increment: number) => {
-    console.log(`index vs increment: ${index} vs ${increment}`)
-    dispatch(incrementIndex({ increment }))
-  }
+  const { data: url } = useLoadDocQuery(pdf ? pdf.docId : skipToken)
 
   const [updateDocField] = useUpdateDocFieldMutation()
-  const pushPdfUpdates = async () => {
-    // pdf should always be not null when this is called
-    // @ts-ignore
-    const docId = pdf.docId
-
-    // @ts-ignore
-    for (const [field, value] of Object.entries(pdf)) {
-      if (Object.prototype.hasOwnProperty.call(pdf, field)) {
-        let transformedValue: string
-        if (field === 'pageCount') {
-          transformedValue = ''
-        } else if (field === 'createdDate') {
-          transformedValue = formatOra2Date(value + '')
-        } else {
-          transformedValue = value + ''
-        }
-        try {
-          await updateDocField({
-            docId,
-            field,
-            value: transformedValue,
-          })
-        } catch (err) {
-          console.log('pdf update err', err)
-        }
-      }
+  const [approveDoc] = useApproveDocMutation()
+  // pdf should always be not null when this is called
+  const approve = async () => {
+    console.log('approved')
+    try {
+      await approveDoc({
+        // @ts-ignore
+        docId: pdf.docID,
+        field: 'pageCount',
+        // @ts-ignore
+        value: pdf.pageCount + '',
+      })
+    } catch (err) {
+      console.log('doc approval err', err)
     }
   }
-
-  const approve = async () => {
-    await pushPdfUpdates()
-    dispatch(approvePdf())
-  }
   const reject = () => {
-    dispatch(rejectPdf())
+    console.log('rejected')
   }
 
-  const handleUpdateDoc = (field: keyof BirisFileInfo, value: string) => {
-    dispatch(
-      updatePdf({
-        index,
+  // pdf should always be not null when this is called
+  const handleUpdateDoc = async (field: keyof BirisFileInfo, value: string) => {
+    console.log(`updating doc field: ${field} with the value ${value}`)
+    let transformedValue: string
+    if (field === 'createdDate') {
+      transformedValue = formatOra2Date(value + '')
+    } else {
+      transformedValue = value + ''
+    }
+    try {
+      const updatedDoc = await updateDocField({
+        // @ts-ignore
+        docId: pdf.docId,
         field,
-        value,
-      }),
-    )
+        value: transformedValue,
+      }).unwrap()
+      console.log('updated doc should be', updatedDoc)
+    } catch (err) {
+      console.log(`doc update err for field ${field}: ${err}`)
+    }
   }
 
   const [updateDocBridgeField] = useUpdateDocBridgesFieldMutation()
@@ -138,19 +120,21 @@ export const PdfApproval = () => {
         <div className="pdf-viewer">
           <PdfViewer url={url} />
           <Button
-            bg="gray"
+            bg="#495057"
             // @ts-ignore if pdf exists so does pdfs
-            disabled={pdfs.length == 1}
+            disabled={index === 0 || pdfs.length == 1}
             onClick={() => {
-              changePdf(-1)
+              // changePdf(-1)
+              setIndex(index - 1)
             }}
           >
             Previous
           </Button>
           <Button
-            bg="gray"
+            bg="#495057"
             onClick={() => {
-              changePdf(1)
+              // changePdf(1)
+              setIndex(index + 1)
             }}
           >
             Next/Skip
