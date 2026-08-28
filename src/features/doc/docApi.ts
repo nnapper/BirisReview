@@ -54,6 +54,7 @@ export type BirisFileInfo = {
   brKeys: string[]
   contractNum: string
 
+  dir: string
   dirId: number
   docId: number
   docTypeId: number
@@ -70,21 +71,32 @@ export type BirisFileInfo = {
   inspKey: string | null
 }
 
-
-
 type UpdateDocBridgesFieldParams = {
   docId: number
   oldBrKey: string
   value: string
 }
 
-export const pdfApi = createApi({
-  reducerPath: 'pdfApi',
+type Email = {
+  from: string
+  toContacts: string[]
+  ccContacts: string[]
+  subject: string
+  body: string
+}
+
+type RejectDocParams = {
+  email: Email
+  docId: number
+}
+
+export const docApi = createApi({
+  reducerPath: 'docApi',
   baseQuery: fetchBaseQuery({
     baseUrl: appServer + '/api',
     prepareHeaders: (headers) => { 
       const token = localStorage.getItem(appAuth) ?? ''
-      headers.set('x-access-token', '' + token)
+      headers.set('x-access-token', token + '')
     },
   }),
   tagTypes: ['docs'],
@@ -98,7 +110,7 @@ export const pdfApi = createApi({
       providesTags: ['docs'],
     }),
     loadDoc: builder.query<string, number>({
-      query: (docId) => { 
+      query: docId => { 
         return {
           url: `/biris/pdfByIdForAdmin?id=${docId}`,
           responseHandler: (response) => response.blob()
@@ -109,7 +121,7 @@ export const pdfApi = createApi({
       },
     }),
     checkInspKey: builder.query<boolean, CheckInspKeyParams>({
-      query: (vm) => { 
+      query: vm => { 
         return {
           url: `/docparams/checkInspKey?${serialize(vm)}`,
         }
@@ -123,14 +135,14 @@ export const pdfApi = createApi({
       }
     }),
     search: builder.query<AssetInfo[], SearchParams>({
-      query: (brKey) => { 
+      query: brKey => { 
         return {
           url: `/docparams/search?b=${brKey.query}`,
         }
       }
     }),
     updateDocField: builder.mutation<DocDescriptorVM, UpdateDocFieldParams>({
-      query: (vm) => { 
+      query: vm => { 
         return {
           url: '/admin/updateDocFieldForApproval',
           method: 'POST',
@@ -159,7 +171,18 @@ export const pdfApi = createApi({
       },
       invalidatesTags: ['docs'],
     }),
-  }),
+    // TODO: update return type when api finalized
+    rejectDoc: builder.mutation<RejectDocParams, RejectDocParams>({
+      query: vm => { 
+        return {
+          url: '/admin/rejectBiris',
+          method: 'POST',
+          body: vm
+        }
+      },
+      invalidatesTags: ['docs'],
+    })
+  })
 })
 
 export const {
@@ -170,5 +193,6 @@ export const {
   useLazySearchQuery,
   useUpdateDocFieldMutation,
   useUpdateDocBridgesFieldMutation,
-  useApproveDocMutation
-} = pdfApi
+  useApproveDocMutation,
+  useRejectDocMutation
+} = docApi
