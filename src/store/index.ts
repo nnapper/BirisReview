@@ -2,18 +2,21 @@ import { configureStore } from '@reduxjs/toolkit'
 import { listenerMiddleware } from './listenerMiddleware'
 import authReducer from '../features/auth/authSlice'
 import { authApi } from '../features/auth/authApi'
-import { pdfApi } from '../features/pdf/pdfApi'
+import { docApi } from '../features/doc/docApi'
+import { bridgeApi } from '../features/bridgeApi'
 
 export const store = configureStore({
   reducer: {
     auth: authReducer,
     [authApi.reducerPath]: authApi.reducer,
-    [pdfApi.reducerPath]: pdfApi.reducer
+    [docApi.reducerPath]: docApi.reducer,
+    [bridgeApi.reducerPath]: bridgeApi.reducer
   },
   middleware: getDefaultMiddleware => getDefaultMiddleware()
     .prepend(listenerMiddleware.middleware)
     .concat(authApi.middleware)
-    .concat(pdfApi.middleware)
+    .concat(docApi.middleware)
+    .concat(bridgeApi.middleware)
 })
 
 export type RootState = ReturnType<typeof store.getState>
