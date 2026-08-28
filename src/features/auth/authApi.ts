@@ -49,6 +49,5 @@ export const authApi = createApi({
 
 export const {
   useAuthenticateMutation,
-  useBelongsQuery,
-  useLazyBelongsQuery,
+  useLazyBelongsQuery
 } = authApi
