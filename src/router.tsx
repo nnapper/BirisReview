@@ -2,7 +2,7 @@ import { createBrowserRouter, redirect } from 'react-router'
 import App from './App'
 import { Login } from './features/auth/Login'
 import type { AppStore } from './store'
-import { PdfApproval } from './features/pdf/PdfApproval'
+import { DocApproval } from './features/doc/DocApproval'
 
 export const router = (store: AppStore) => {
   const checkLoggedIn = () => {
@@ -19,7 +19,7 @@ export const router = (store: AppStore) => {
       path: '/',
       element: <App />,
       loader: checkLoggedIn,
-      children: [{ path: 'pdf', element: <PdfApproval /> }],
+      children: [{ path: 'pdf', element: <DocApproval /> }],
     },
     {
       path: '/login',
