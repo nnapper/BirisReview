@@ -1,11 +1,11 @@
 import { EditableField, LinkBridgeField } from '../../components/EditableField'
 import { useEffect, useState } from 'react'
 import { formatOraDate } from '../../utils/ctutils'
-import type { BirisFileInfo } from '../../features/pdf/pdfApi'
 import {
   useLazyCheckInspKeyQuery,
   type CheckInspKeyParams,
-} from '../../features/pdf/pdfApi'
+  type BirisFileInfo,
+} from '../../features/doc/docApi'
 import { Alert, Grid, GridCol } from '@mantine/core'
 import { InfoIcon, WarningIcon } from '@phosphor-icons/react'
 
@@ -32,7 +32,6 @@ export const BirisAdminEdit = (props: BirisAdminEditProps) => {
     pageCount,
     pageSuffix,
     inspKey,
-    snumber,
     createdDate,
   } = props.docInfo
 

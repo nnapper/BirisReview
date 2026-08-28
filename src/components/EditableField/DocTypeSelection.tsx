@@ -4,7 +4,7 @@ import {
   type ComboboxItem,
   type OptionsFilter,
 } from '@mantine/core'
-import { useDocTypesQuery, type DocType } from '../../features/pdf/pdfApi'
+import { useDocTypesQuery, type DocType } from '../../features/doc/docApi'
 
 type DocTypeSelectionProps = {
   docTypeId: number

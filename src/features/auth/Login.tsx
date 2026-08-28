@@ -7,7 +7,7 @@ import { appAuth, userAuth } from './../../config'
 import { useNavigate } from 'react-router'
 import { useEffect, useState } from 'react'
 import '../../styles/App.css'
-import { useFetchDocsQuery } from '../pdf/pdfApi'
+import { useFetchDocsQuery } from '../doc/docApi'
 import { app } from '../../config'
 import { type RootState } from '../../store'
 
