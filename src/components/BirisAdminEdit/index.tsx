@@ -1,164 +1,220 @@
-// import { Button } from "primereact/button"
-// import { adminApi, superUserApi } from "../../apis"
-// import PdfViewer from "../PdfViewer"
-// import BirisAdminEdit from "./BirisAdminEdit"
-// import { useEffect, useState } from "react"
-// import { useNavigate } from "react-router-dom"
+import { EditableField } from '../../components/EditableField'
+import { useEffect, useState } from 'react'
+import { formatOraDate } from '../../utils/ctutils'
+import {
+  useLazyCheckInspKeyQuery,
+  type CheckInspKeyParams,
+  type BirisFileInfo,
+} from '../../features/doc/docApi'
+import { Alert, Grid, GridCol } from '@mantine/core'
+import { InfoIcon, WarningIcon } from '@phosphor-icons/react'
+import { LinkBridgeField } from '../EditableField/LinkBridgeField'
 
-// const NoDocumentFound = ({ id }: { id: number | string | undefined }) => {
-//   return <div>Document ID: {id} cannot be located</div>
-// }
+interface BirisAdminEditProps {
+  docInfo: BirisFileInfo
+  reportTypes: number[]
+  handleUpdateDoc: (field: keyof BirisFileInfo, value: string) => void
+  handleUpdateDocBridge: (oldBrKey: string | null, value: string | null) => void
+}
 
-// const BirisAdminEditWrapper = ({
-//   id,
-//   reportTypes,
-//   onLoading,
-// }: {
-//   id: number | string | undefined
-//   reportTypes: number[]
-//   onLoading: (loading: { src: string; message: string | null }) => void
-// }) => {
-//   if (id == null) return <NoDocumentFound id={-1} />
-//   const [docInfo, setDocInfo] = useState<BirisFileInfo | null>(null)
-//   const [showPdf, setShowPdf] = useState(true)
-//   const [allowDelete, setAllowDelete] = useState(false)
-//   const navigate = useNavigate()
+export const BirisAdminEdit = (props: BirisAdminEditProps) => {
+  const {
+    docId,
+    docTypeId,
+    dirId,
+    brKeys,
 
-//   useEffect(() => {
-//     onLoading({ src: "BirisAdminEdit", message: "Loading document info..." })
-//     setDocInfo(null)
-//     if (id == null) return
-//     const _id = typeof id === "string" ? parseInt(id) : id
+    contractNum,
+    pageDesc,
+    pageNum,
+    filename,
+    docDate,
+    pageCount,
+    pageSuffix,
+    inspKey,
+    createdDate,
+  } = props.docInfo
 
-//     adminApi.byId({ id: _id }).then(({ data }: ApiResult) => {
-//       setDocInfo(data)
-//       if (superUserApi.hasUserToken()) {
-//         setAllowDelete(true)
-//       }
-//       // else if (data.createdDate != null) {
-//       //   const createdDate = new Date(data.createdDate)
-//       //   // @ts-ignore
-//       //   setAllowDelete(Date.now() - createdDate < 1000 * 3600 * 24)
-//       // }
+  const { handleUpdateDoc, handleUpdateDocBridge, reportTypes } = props
+  const [inspKeyMessage, setInspKeyMessage] = useState('')
+  const [tooManyBridgesTypeIdError, setTooManyBridgesTypeIdError] = useState('')
 
-//       onLoading({ src: "BirisAdminEdit", message: null })
-//     })
-//   }, [id])
+  const [checkInspKeyQuery] = useLazyCheckInspKeyQuery()
+  const checkInspKey = async (vm: CheckInspKeyParams) => {
+    try {
+      const data = await checkInspKeyQuery(vm).unwrap()
 
-//   const handleUpdateDoc = (field: string, value: string, docId: number) => {
-//     onLoading({
-//       src: "BirisAdminEdit",
-//       message: "Updating BIRIS Document Info",
-//     })
-//     adminApi
-//       .updateDocField({ docId, field, value })
-//       .then(({ data }: { data: BirisFileInfo }) => {
-//         setDocInfo(data)
-//       })
-//       .catch((err: any) => {
-//         console.log("error updating", err)
-//       })
-//       .finally(() => {
-//         onLoading({
-//           src: "BirisAdminEdit",
-//           message: null,
-//         })
-//       })
-//   }
+      setInspKeyMessage(data ? 'matched' : 'not matched')
+    } catch (err) {
+      console.log('checkInspKey err', err)
+    }
+  }
 
-//   const handleDeleteDoc = async (docId: number) => {
-//     onLoading({
-//       src: "BirisAdminEdit",
-//       message: "Updating BIRIS Document Info",
-//     })
+  useEffect(() => {
+    setTooManyBridgesTypeIdError(
+      reportTypes.includes(docTypeId) && brKeys.length > 1 ?
+        'One bridge should be linked to Inspection Report'
+      : '',
+    )
 
-//     try {
-//       const { data } = await adminApi.deleteDoc({ id: docId })
-//       navigate("/deleteDocConfirm", { state: data })
-//     } catch (err) {
-//       console.log(err)
-//       // @ts-ignore
-//       const { data } = err.response
-//       setTimeout(() => {
-//         window.alert("Error encountering: " + data)
-//       }, 100)
-//     } finally {
-//       onLoading({
-//         src: "BirisAdminEdit",
-//         message: null,
-//       })
-//     }
-//   }
+    if (
+      reportTypes.includes(docTypeId) &&
+      inspKey != null &&
+      inspKey.length > 0
+    ) {
+      checkInspKey({
+        inspDate: formatOraDate(docDate),
+        brKey: brKeys[0],
+        inspKey,
+      })
+    } else {
+      setInspKeyMessage('not checked')
+    }
+  }, [docTypeId, docDate, brKeys, inspKey])
 
-//   const handleUpdateDocBridge = (
-//     oldBrKey: string | null,
-//     value: string | null,
-//     docId: number,
-//   ) => {
-//     // don't update the same brkey
-//     if (oldBrKey == value) return
+  const cvalues = [
+    docId + '',
+    dirId + '',
+    filename,
+    contractNum, //3
+    pageDesc,
+    pageNum + '',
+    pageCount + '', //6
+    pageSuffix,
+    docTypeId + '',
+    formatOraDate(createdDate),
+  ]
+  const cupdateFields = [
+    null,
+    null,
+    null,
+    'contractNum', //3
+    'pageDesc',
+    'pageNum',
+    'pageCount', //6
+    'pageSuffix',
+    'docTypeId',
+    null,
+  ]
+  const clabels = [
+    'Document ID',
+    'Directory ID',
+    'File Name',
+    'Contract Num', //3
+    'Page Description',
+    'Page Number',
+    'Page Count', //6
+    'Page Suffix',
+    'Document Type',
+    'Created Date',
+  ]
+  const ctypes = [
+    'readonly',
+    'readonly',
+    'readonly',
+    'string', //3
+    'string',
+    'string',
+    'string', //6
+    'string',
+    'docType',
+    'readonly',
+  ]
 
-//     // don't add if brKey already exists
-//     if (oldBrKey == null && docInfo != null && value != null) {
-//       const i = docInfo.brKeys.indexOf(value)
-//       if (i > -1) return
-//     }
+  return (
+    <div className="biris-admin-edit">
+      <div>
+        {reportTypes.includes(docTypeId) && inspKeyMessage === 'matched' && (
+          <Alert
+            variant="light"
+            color="green"
+            withCloseButton
+            title="Alert title"
+            icon={<InfoIcon />}
+          >
+            Inspection Date and InspKey match
+          </Alert>
+        )}
+      </div>
+      <div>
+        {cvalues.map((_, i) => (
+          <EditableField
+            key={i}
+            value={cvalues[i] || ''}
+            label={clabels[i]}
+            dataType={ctypes[i]}
+            handleUpdate={newVal => {
+              if (cupdateFields[i] != null)
+                // @ts-ignore
+                handleUpdateDoc(cupdateFields[i], newVal)
+            }}
+          />
+        ))}
+        <div>
+          <EditableField
+            value={docDate}
+            label="Document Date"
+            dataType="calendar"
+            handleUpdate={newVal => {
+              // @ts-ignore
+              handleUpdateDoc('docDate', newVal, docId)
+            }}
+          />
+        </div>
+        {reportTypes.includes(docTypeId) && (
+          <EditableField
+            value={inspKey || ''}
+            label="Inspection Key"
+            dataType="string"
+            handleUpdate={newVal =>
+              handleUpdateDoc('inspKey', newVal?.toUpperCase() || '')
+            }
+          />
+        )}
+      </div>
+      <h2>Assets Linked</h2>
+      <div>
+        {tooManyBridgesTypeIdError !== '' && (
+          <Alert
+            variant="light"
+            color="red"
+            withCloseButton
+            title="Alert title"
+            icon={<WarningIcon />}
+          >
+            Bridge Report should only be linked to 1 bridge.
+          </Alert>
+        )}
 
-//     adminApi
-//       .updateDocBridgesField({ docId, oldBrKey, value })
-//       .then(({ data }: { data: BirisFileInfo }) => {
-//         setDocInfo(data)
-//       })
-//       .catch((err: ApiError) => {
-//         setTimeout(() => {
-//           window.alert(
-//             "Encounter error when updating document info: " + err.response.data,
-//           )
-//         }, 100)
-//       })
-//   }
-
-//   return docInfo != null ? (
-//     <div style={{ height: "98%", width: "100%", display: "flex" }}>
-//       <div style={{ flex: 1 }}>
-//         <div className="flex align-items-center gap-3">
-//           <span className="text-2xl font-semibold text-900 my-3">
-//             Information
-//           </span>
-//           <Button
-//             text
-//             label={showPdf ? "Hide PDF" : "Show PDF"}
-//             onClick={() => setShowPdf(!showPdf)}
-//           />
-//         </div>
-//         <BirisAdminEdit
-//           key={docInfo.docId}
-//           docInfo={docInfo}
-//           allowDelete={allowDelete}
-//           handleUpdateDoc={handleUpdateDoc}
-//           handleUpdateDocBridge={handleUpdateDocBridge}
-//           reportTypes={reportTypes}
-//           onLoading={onLoading}
-//           handleDeleteDoc={handleDeleteDoc}
-//         />
-//       </div>
-//       <div style={{ display: !showPdf ? "none" : "block", flex: 1 }}>
-//         <div className="flex align-items-center gap-3">
-//           <span className="text-2xl font-semibold text-900 my-3">Preview</span>
-//         </div>
-//         <PdfViewer
-//           key={docInfo.docId}
-//           id={docInfo.docId}
-//           brKey={docInfo.brKeys[0]}
-//           onLoading={onLoading}
-//         />
-//       </div>
-//     </div>
-//   ) : (
-//     <div>Loading info</div>
-//   )
-// }
-
-// export default BirisAdminEditWrapper
-
-export const BirisAdminEditWrapper = () => {}
+        {brKeys.length === 0 && (
+          <Alert
+            variant="light"
+            color="red"
+            withCloseButton
+            title="Alert title"
+            icon={<WarningIcon />}
+          >
+            No bridge is linked to the document
+          </Alert>
+        )}
+      </div>
+      <Grid>
+        {brKeys.map((brKey: string) => (
+          <GridCol key={brKey}>
+            <EditableField
+              value={brKey}
+              label="Asset ID"
+              dataType="brKey"
+              handleUpdate={newVal => {
+                handleUpdateDocBridge(brKey, newVal)
+              }}
+            />
+          </GridCol>
+        ))}
+        <GridCol>
+          <LinkBridgeField handleUpdate={e => handleUpdateDocBridge(null, e)} />
+        </GridCol>
+      </Grid>
+    </div>
+  )
+}
