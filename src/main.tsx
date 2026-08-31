@@ -1,6 +1,5 @@
 import React from 'react'
 import { createRoot } from 'react-dom/client'
-
 import { Provider } from 'react-redux'
 import { store } from './store'
 import { router } from './router'
@@ -11,6 +10,7 @@ import '@mantine/dates/styles.css'
 import '@mantine/notifications/styles.css'
 import './styles/index.css'
 import { Notifications } from '@mantine/notifications'
+
 const root = createRoot(document.getElementById('root') as HTMLElement)
 const routerInstance = router(store)
 
@@ -22,6 +22,5 @@ root.render(
         <RouterProvider router={routerInstance} />
       </MantineProvider>
     </Provider>
-    ,
   </React.StrictMode>,
 )
