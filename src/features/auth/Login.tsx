@@ -2,14 +2,13 @@ import { Button, TextInput, Text } from '@mantine/core'
 import { useForm } from '@mantine/form'
 import { useAuthenticateMutation, useLazyBelongsQuery } from '../auth/authApi'
 import { setAuthUser } from './authSlice'
-import { useDispatch, useSelector } from 'react-redux'
+import { useDispatch } from 'react-redux'
 import { appAuth, userAuth } from './../../config'
 import { useNavigate } from 'react-router'
 import { useEffect, useState } from 'react'
 import '../../styles/App.css'
-import { useFetchDocsQuery } from '../doc/docApi'
 import { app } from '../../config'
-import { type RootState } from '../../store'
+import { LoadingOverlay } from '../../components/LoadingOverlay'
 
 export const Login = () => {
   const form = useForm({
@@ -31,8 +30,9 @@ export const Login = () => {
 
   const dispatch = useDispatch()
   const navigate = useNavigate()
-  const [authenticate] = useAuthenticateMutation()
-  const [authorized] = useLazyBelongsQuery()
+  const [authenticate, { isLoading: authenticateLoading }] =
+    useAuthenticateMutation()
+  const [authorized, { isLoading: authorizedLoading }] = useLazyBelongsQuery()
   const authorizeUser = async () => {
     try {
       const appAuthObj = await authorized().unwrap()
@@ -67,19 +67,18 @@ export const Login = () => {
     authorizeUser()
   }
 
-  // ego loading a relatively small amount of pdfs
-  useFetchDocsQuery()
-
   const appAuthToken = localStorage.getItem(appAuth)
-  if (appAuthToken) dispatch(setAuthUser({ token: appAuthToken }))
 
-  const token = useSelector((state: RootState) => state.auth.token)
   useEffect(() => {
-    if (token) navigate('/pdf')
-  }, [token])
+    if (appAuthToken) {
+      dispatch(setAuthUser({ token: appAuthToken }))
+      navigate('/pdf')
+    }
+  }, [appAuthToken])
 
   return (
     <div className="login">
+      {(authenticateLoading || authorizedLoading) && <LoadingOverlay />}
       Login
       <form
         onSubmit={form.onSubmit(value => {
