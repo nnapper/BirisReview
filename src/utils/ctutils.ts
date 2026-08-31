@@ -4,18 +4,18 @@ export function cleanseFileName(fn: string) {
 }
 
 const months: { [key: string]: string } = {
-  "01": "Jan",
-  "02": "Feb",
-  "03": "Mar",
-  "04": "Apr",
-  "05": "May",
-  "06": "Jun",
-  "07": "Jul",
-  "08": "Aug",
-  "09": "Sep",
-  "10": "Oct",
-  "11": "Nov",
-  "12": "Dec",
+  "01": "JAN",
+  "02": "FEB",
+  "03": "MAR",
+  "04": "APR",
+  "05": "MAY",
+  "06": "JUN",
+  "07": "JUL",
+  "08": "AUG",
+  "09": "SEP",
+  "10": "OCT",
+  "11": "NOV",
+  "12": "DEC",
 }
 
 export const convertYYYYMMDD = (dateStr: string | null) => {
@@ -44,7 +44,7 @@ export const formatDate = (date: string | null) => {
 export const formatOra2Date = (date: string | null) => {
   const p = formatDate(date).split("-")
   if (p == null || p.length !== 3) return ""
-  return p[2] + "-" + months[p[1]].toUpperCase() + "-" + p[0].substring(2, 4)
+  return p[2] + "-" + months[p[1]].toUpperCase() + "-" + p[0].substring(0, 4)
 }
 
 export const formatOraDate = (date: string | null) => {
@@ -71,8 +71,8 @@ export const isBrmGuid = (str: string) => {
   return /^[0-9a-fA-F]{32}$/.test(str)
 }
 
-export const serialize = (obj, prefix = null) => {
-  var str = [],
+export const serialize = (obj: Record<string, string>, prefix: string | null = null) => {
+  var str: string[] = [],
     p,
     v
   for (p in obj) {
