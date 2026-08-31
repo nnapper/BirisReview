@@ -7,11 +7,7 @@ import { DocApproval } from './features/doc/DocApproval'
 export const router = (store: AppStore) => {
   const checkLoggedIn = () => {
     const token = store.getState().auth.token
-    if (!token) {
-      console.log('redirected to login')
-      return redirect('/login')
-    }
-    return null
+    if (!token) return redirect('/login')
   }
 
   return createBrowserRouter([
