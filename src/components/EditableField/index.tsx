@@ -3,7 +3,6 @@ import { EditableCalendar } from './EditableCalendar'
 import { EditableString } from './EditableString'
 import { EditableBrKey } from './EditableBrKey'
 import { ReadOnlyField } from './ReadOnlyField'
-import { LinkBridgeField } from './LinkBridgeField'
 import { EditableDocType } from './EditableDocType'
 
 type EditableFieldProps = {
@@ -52,11 +51,8 @@ export const EditableField = (props: EditableFieldProps) => {
           value={value}
           label={label}
           onEditing={() => setEditing(true)}
-          // onCopy={() => navigator.clipboard.writeText(value)}
         />
       }
     </div>
   )
 }
-
-export { LinkBridgeField, ReadOnlyField }
