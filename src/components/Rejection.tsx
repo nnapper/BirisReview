@@ -3,30 +3,61 @@ import { PaperPlaneRightIcon, XCircleIcon } from '@phosphor-icons/react'
 import { useEffect, useState } from 'react'
 import { useDetailsQuery } from '../features/bridgeApi'
 import { useRejectDocMutation } from '../features/doc/docApi'
+import { notifications } from '@mantine/notifications'
 
 export const Rejection = (props: {
-  brKey: string
+  brKeys: string[]
   docId: number
   fileName: string
   handleCancel: () => void
 }) => {
-  const { brKey, docId, fileName, handleCancel } = props
+  const { brKeys, docId, fileName, handleCancel } = props
 
-  const { data: vm } = useDetailsQuery(brKey)
+  const [index, setIndex] = useState<number>(0)
+  const { data: vm } = useDetailsQuery(brKeys[index])
 
-  const abme = vm?.assignedAbme.abmeEmail || 'Loading email'
-  const supervisor = vm?.assignedAbme.supervisorEmail || 'Loading email'
-
-  const [toContacts, setToContacts] = useState<string>('')
-  const [ccContacts, setCcContacts] = useState<string>('')
+  const [toContacts, setToContacts] = useState<string>('Loading email')
+  const [ccContacts, setCcContacts] = useState<string>('Loading email')
   const [body, setBody] = useState<string>('')
 
   useEffect(() => {
-    setToContacts(abme)
-    setCcContacts(supervisor)
-  }, [abme, supervisor])
+    if (vm && !vm.assignedAbme) setIndex(index + 1)
+    else if (vm) {
+      setToContacts(vm.assignedAbme.abmeEmail)
+      setCcContacts(vm.assignedAbme.supervisorEmail)
+    }
+  }, [vm])
 
   const [reject] = useRejectDocMutation()
+
+  const handleReject = async () => {
+    try {
+      reject({
+        email: {
+          from: 'testing',
+          toContacts: toContacts.split(/[,;\s]/),
+          ccContacts: ccContacts.split(/[,;\s]/),
+          subject: `Biris ${fileName}`,
+          body,
+        },
+        docId,
+      })
+      handleCancel()
+      notifications.show({
+        title: `${docId} rejected successfully`,
+        message: `Doc ${docId} has been approved`,
+        position: 'top-center',
+        color: 'green',
+      })
+    } catch (err) {
+      notifications.show({
+        title: `${err}`,
+        message: `Something went wrong when trying to reject doc ${docId}, please reach out to andrew.ao@dot.ca.gov`,
+        position: 'top-center',
+        color: 'red',
+      })
+    }
+  }
 
   return (
     <div className="email">
@@ -57,22 +88,7 @@ export const Rejection = (props: {
         error={body === ''}
       />
       <Center>
-        <Button
-          onClick={() => {
-            reject({
-              email: {
-                from: 'testing',
-                toContacts: toContacts.split(/[,;\s]/),
-                ccContacts: ccContacts.split(/[,;\s]/),
-                subject: `Biris ${fileName}`,
-                body,
-              },
-              docId,
-            })
-            handleCancel()
-          }}
-          disabled={body === ''}
-        >
+        <Button onClick={handleReject} disabled={body === ''}>
           Send <PaperPlaneRightIcon />
         </Button>
         <Button bg="#495057" onClick={handleCancel}>
