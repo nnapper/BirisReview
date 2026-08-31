@@ -1,4 +1,4 @@
-import { Button } from '@mantine/core'
+import { Button, Text } from '@mantine/core'
 import {
   useApproveDocMutation,
   useFetchDocsQuery,
@@ -10,8 +10,10 @@ import {
 import { skipToken } from '@reduxjs/toolkit/query'
 import { BirisAdminEdit } from '../../components/BirisAdminEdit/BirisAdminEdit'
 import { formatOra2Date } from '../../utils/ctutils'
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { Rejection } from '../../components/Rejection'
+import { RejectToaster } from '../../components/Toaster'
+import { notifications } from '@mantine/notifications'
 
 type PdfViewerProps = {
   url: string | undefined
@@ -26,10 +28,6 @@ const PdfViewer = ({ url }: PdfViewerProps) => {
 export const DocApproval = () => {
   const { data: pdfs } = useFetchDocsQuery()
   const [index, setIndex] = useState<number>(0)
-
-  useEffect(() => {
-    console.log('pdfs have changed', pdfs?.length)
-  }, [pdfs])
 
   const pdf =
     pdfs && pdfs.length != 0 && index < pdfs.length ? pdfs[index] : null
@@ -54,7 +52,6 @@ export const DocApproval = () => {
   }
 
   const [draftEmail, setDraftEmail] = useState<boolean>(false)
-
   const reject = () => {
     console.log('rejected')
     setDraftEmail(true)
@@ -91,39 +88,40 @@ export const DocApproval = () => {
 
     if (oldBrKey == null && pdf != null && value != null) {
       const i = pdf.brKeys.indexOf(value)
+      console.log('key already there?', i)
       if (i > -1) return
     }
 
     try {
-      const updatedPdf = await updateDocBridgeField({
+      await updateDocBridgeField({
         // @ts-ignore
         docId: pdf.docId,
-        oldBrKey: oldBrKey + '',
-        value: value + '',
+        oldBrKey: oldBrKey ? oldBrKey + '' : oldBrKey,
+        value: value ? value + '' : value,
       }).unwrap()
-      // @ts-ignore
-      Object.assign(pdf, updatedPdf)
     } catch (err) {
       console.log(err)
     }
   }
-  const onLoading = (loading: { src: string; message: string | null }) => {}
 
-  const testBrKey = '54 0415'
-
-  console.log('url', url)
+  notifications.show({
+    title: 'Arrived at doc approval',
+    message: 'User authorized',
+  })
 
   return (
     <div className="pdf-approval">
       {!pdf && <div>No pdfs left to approve</div>}
       {pdf && (
-        <BirisAdminEdit
-          docInfo={pdf}
-          reportTypes={[]}
-          handleUpdateDoc={handleUpdateDoc}
-          handleUpdateDocBridge={handleUpdateDocBridge}
-          onLoading={onLoading}
-        />
+        <div>
+          <BirisAdminEdit
+            docInfo={pdf}
+            reportTypes={[]}
+            handleUpdateDoc={handleUpdateDoc}
+            handleUpdateDocBridge={handleUpdateDocBridge}
+          />
+          <RejectToaster docId="hllo" />
+        </div>
       )}
       {pdf && (
         <div className="pdf-viewer">
@@ -138,24 +136,18 @@ export const DocApproval = () => {
           <PdfViewer url={url} />
           {!draftEmail && (
             <div>
+              <Text>
+                {index + 1} / {pdfs?.length}
+              </Text>
               <Button
                 bg="#495057"
                 // @ts-ignore if pdf exists so does pdfs
                 disabled={index === 0 || pdfs.length == 1}
-                onClick={() => {
-                  // changePdf(-1)
-                  setIndex(index - 1)
-                }}
+                onClick={() => setIndex(index - 1)}
               >
                 Previous
               </Button>
-              <Button
-                bg="#495057"
-                onClick={() => {
-                  // changePdf(1)
-                  setIndex(index + 1)
-                }}
-              >
+              <Button bg="#495057" onClick={() => setIndex(index + 1)}>
                 Next/Skip
               </Button>
               <Button
