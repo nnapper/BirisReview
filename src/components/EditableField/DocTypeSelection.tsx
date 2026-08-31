@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import {
   Autocomplete,
+  type AutocompleteProps,
   type ComboboxItem,
   type OptionsFilter,
 } from '@mantine/core'
@@ -34,8 +35,7 @@ export const DocTypeSelection3 = (props: DocTypeSelectionProps) => {
     )
   }
 
-  const handleAutoCompleteSelect = (docType: string) => {
-    const id = docType.split(' ')[0]
+  const updateValidDocTypeId = (id: number) => {
     const selectedItem = docTypes.find(docType => docType.id === +id)
     if (selectedItem !== undefined) {
       setDocTypeId(selectedItem.id)
@@ -43,22 +43,36 @@ export const DocTypeSelection3 = (props: DocTypeSelectionProps) => {
     }
   }
 
+  const handleAutoCompleteSelect = (docType: string) => {
+    updateValidDocTypeId(+docType)
+  }
+
+  const renderList: AutocompleteProps['renderOption'] = ({ option }) => {
+    const docType = docTypes.find(docType => docType.id === +option.value)
+    return docType ?
+        <div>
+          {docType.id} - {docType.dscr}
+        </div>
+      : option.value
+  }
+
   return (
-    <div>
-      <Autocomplete
-        value={docTypeId + ''}
-        data={docTypes.map(docType => `${docType.id} - ${docType.dscr}`)}
-        onChange={value => {
-          if (!Number.isNaN(+value)) {
-            setDocTypeId(+value)
-            search({ query: value })
-          }
-        }}
-        filter={filter}
-        comboboxProps={{
-          onOptionSubmit: value => handleAutoCompleteSelect(value),
-        }}
-      />
-    </div>
+    <Autocomplete
+      value={docTypeId + ''}
+      data={docTypes.map(docType => `${docType.id}`)}
+      onChange={value => {
+        const id = +value
+        if (!Number.isNaN(id)) {
+          search({ query: value })
+          updateValidDocTypeId(id)
+        }
+      }}
+      renderOption={renderList}
+      filter={filter}
+      comboboxProps={{
+        onOptionSubmit: value => handleAutoCompleteSelect(value),
+      }}
+      autoSelectOnBlur
+    />
   )
 }
