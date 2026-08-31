@@ -22,3 +22,16 @@ export const store = configureStore({
 export type RootState = ReturnType<typeof store.getState>
 export type AppDispatch = typeof store.dispatch
 export type AppStore = typeof store
+
+export const apiLoading = (state: RootState) => {
+  const apiSlices = [
+    state[docApi.reducerPath],
+    state[bridgeApi.reducerPath],
+    state[authApi.reducerPath],
+  ]
+
+  return apiSlices.some(api =>
+    Object.values(api.queries).some(q => q?.status === 'pending') ||
+    Object.values(api.mutations).some(m => m?.status === 'pending')
+  )
+}
