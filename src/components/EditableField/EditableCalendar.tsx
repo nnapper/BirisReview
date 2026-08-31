@@ -10,11 +10,6 @@ export const EditableCalendar = ({
   onCancel,
   validate,
 }: EditableFieldProps) => {
-  const handleSelect = (date: string | null) => {
-    console.log('date', date)
-    setDate(date)
-  }
-
   const [date, setDate] = useState<string | null>(value)
 
   return (
@@ -23,7 +18,7 @@ export const EditableCalendar = ({
       <GridCol span={6}>
         <DatePickerInput
           value={date}
-          onChange={handleSelect}
+          onChange={setDate}
           valueFormat="DD-MMM-YYYY"
         />
       </GridCol>
