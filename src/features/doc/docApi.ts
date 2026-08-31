@@ -73,8 +73,8 @@ export type BirisFileInfo = {
 
 type UpdateDocBridgesFieldParams = {
   docId: number
-  oldBrKey: string
-  value: string
+  oldBrKey: string | null
+  value: string | null
 }
 
 type Email = {
