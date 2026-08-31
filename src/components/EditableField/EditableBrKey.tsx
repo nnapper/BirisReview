@@ -1,6 +1,6 @@
 import { useState } from 'react'
-// import AssetSelection from './AssetSelection2'
-import { Button, ButtonGroup, Center } from '@mantine/core'
+import { AssetSelection } from './AssetSelection'
+import { Button, Grid, GridCol } from '@mantine/core'
 
 export const EditableBrKey = ({
   value,
@@ -12,40 +12,29 @@ export const EditableBrKey = ({
   const [v, setV] = useState<string>(value || '')
 
   return (
-    <div key={value}>
-      <Center>
-        <span style={{ marginRight: '20px' }}>{label}:</span>
-        {/* <AssetSelection
-        brKey={v}
-        onSelected={e => {
-          console.log(e)
-          setV(e)
-        }}
-      /> */}
-        <ButtonGroup style={{ marginLeft: '20px' }}>
-          <Button
-            onClick={e => {
-              console.log(e)
-              console.log('presave', v, value)
-              onSave(v)
-            }}
-            disabled={!validate(v)}
-          >
-            Save
-          </Button>
-          <Button bg="#495057" onClick={onCancel}>
-            Cancel
-          </Button>
-          <Button
-            bg="red"
-            onClick={() => {
-              onSave(null)
-            }}
-          >
-            Delete
-          </Button>
-        </ButtonGroup>
-      </Center>
-    </div>
+    <Grid key={value}>
+      <GridCol span={4}>
+        <span>{label}:</span>
+      </GridCol>
+      <GridCol span={6}>
+        <AssetSelection brKey={v} onSelected={e => setV(e)} />
+      </GridCol>
+      <GridCol span={2}>
+        <Button onClick={() => onSave(v)} disabled={!validate(v)}>
+          Save
+        </Button>
+        <Button bg="#495057" onClick={onCancel}>
+          Cancel
+        </Button>
+        <Button
+          bg="red"
+          onClick={() => {
+            onSave(null)
+          }}
+        >
+          Delete
+        </Button>
+      </GridCol>
+    </Grid>
   )
 }

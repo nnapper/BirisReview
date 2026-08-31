@@ -1,6 +1,6 @@
 import { Autocomplete, type AutocompleteProps } from '@mantine/core'
 import { useState } from 'react'
-import { useLazySearchQuery, type AssetInfo } from '../../features/pdf/pdfApi'
+import { useLazySearchQuery, type AssetInfo } from '../../features/doc/docApi'
 
 export const AssetSelection = (props: {
   brKey: string
@@ -8,7 +8,7 @@ export const AssetSelection = (props: {
 }) => {
   const { brKey, onSelected } = props
   const [value, setValue] = useState<string>(brKey)
-  const [items, setItems] = useState<AssetInfo[]>([])
+  const [bridges, setBridges] = useState<AssetInfo[]>([])
 
   const [searchQuery] = useLazySearchQuery()
 
@@ -17,7 +17,7 @@ export const AssetSelection = (props: {
     if (b != null && b.length > 1) {
       try {
         const data = await searchQuery({ query: b }).unwrap()
-        setItems(data)
+        setBridges(data)
         if (data.length === 1) {
           setValue(data[0].brKey)
           onSelected(data[0].brKey)
@@ -28,41 +28,33 @@ export const AssetSelection = (props: {
     }
   }
 
-  const handleAutoCompleteSelect = (id: string) => {
-    console.log('looking at', id)
-    setValue(id)
+  const handleAutoCompleteSelect = (brKey: string) => {
+    setValue(brKey)
+    onSelected(brKey)
   }
 
-  const itemTemplate = (i: AssetInfo) => (
-    <div>
-      {i.brKey} - {i.name}
-    </div>
-  )
-
   const renderList: AutocompleteProps['renderOption'] = ({ option }) => {
-    const item = items.find(item => item.brKey === option.value)
-    return item ? itemTemplate(item) : option.value
+    const bridge = bridges.find(bridge => bridge.brKey === option.value)
+    return bridge ?
+        <div>
+          {bridge.brKey} - {bridge.name}
+        </div>
+      : option.value
   }
 
   return (
-    <div>
-      <Autocomplete
-        value={value}
-        data={items.map(item => `${item.brKey}`)}
-        onChange={value => {
-          setValue(value)
-          search({ query: value })
-        }}
-        onFocus={() => {
-          if (value === '') {
-            search({ query: '' })
-          }
-        }}
-        renderOption={renderList}
-        comboboxProps={{
-          onOptionSubmit: value => handleAutoCompleteSelect(value),
-        }}
-      />
-    </div>
+    <Autocomplete
+      value={value}
+      data={bridges.map(item => `${item.brKey}`)}
+      onChange={value => {
+        setValue(value)
+        search({ query: value })
+      }}
+      renderOption={renderList}
+      comboboxProps={{
+        onOptionSubmit: value => handleAutoCompleteSelect(value),
+      }}
+      autoSelectOnBlur
+    />
   )
 }
