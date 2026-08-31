@@ -8,11 +8,10 @@ import {
   type BirisFileInfo,
 } from './docApi'
 import { skipToken } from '@reduxjs/toolkit/query'
-import { BirisAdminEdit } from '../../components/BirisAdminEdit/BirisAdminEdit'
+import { BirisAdminEdit } from '../../components/BirisAdminEdit/index'
 import { formatOra2Date } from '../../utils/ctutils'
 import { useState } from 'react'
 import { Rejection } from '../../components/Rejection'
-import { RejectToaster } from '../../components/Toaster'
 import { notifications } from '@mantine/notifications'
 
 type PdfViewerProps = {
@@ -37,7 +36,6 @@ export const DocApproval = () => {
   const [approveDoc] = useApproveDocMutation()
   // pdf should always be not null when this is called
   const approve = async () => {
-    console.log('approved')
     try {
       await approveDoc({
         // @ts-ignore
@@ -46,16 +44,26 @@ export const DocApproval = () => {
         // @ts-ignore
         value: pdf.pageCount + '',
       })
+      notifications.show({
+        // @ts-ignore
+        title: `${pdf.docId} approved successfully`,
+        // @ts-ignore
+        message: `Doc ${pdf.docId} has been approved`,
+        position: 'top-center',
+        color: 'green',
+      })
     } catch (err) {
-      console.log('doc approval err', err)
+      notifications.show({
+        title: `${err}`,
+        message: `Something went wrong when trying to approve the doc, please reach out to andrew.ao@dot.ca.gov`,
+        position: 'top-center',
+        color: 'red',
+      })
     }
   }
 
   const [draftEmail, setDraftEmail] = useState<boolean>(false)
-  const reject = () => {
-    console.log('rejected')
-    setDraftEmail(true)
-  }
+  const reject = () => setDraftEmail(true)
 
   // pdf should always be not null when this is called
   const handleUpdateDoc = async (field: keyof BirisFileInfo, value: string) => {
@@ -67,15 +75,26 @@ export const DocApproval = () => {
       transformedValue = value + ''
     }
     try {
-      const updatedDoc = await updateDocField({
+      await updateDocField({
         // @ts-ignore
         docId: pdf.docId,
         field,
         value: transformedValue,
       }).unwrap()
-      console.log('updated doc should be', updatedDoc)
+      notifications.show({
+        title: `${field} updated successfully`,
+        // @ts-ignore
+        message: `Doc ${pdf.docId}'s ${field} is now ${value}`,
+        position: 'top-center',
+        color: 'green',
+      })
     } catch (err) {
-      console.log(`doc update err for field ${field}: ${err}`)
+      notifications.show({
+        title: `${err}`,
+        message: `Something went wrong when trying to update ${field}, please reach out to andrew.ao@dot.ca.gov`,
+        position: 'top-center',
+        color: 'red',
+      })
     }
   }
 
@@ -99,15 +118,26 @@ export const DocApproval = () => {
         oldBrKey: oldBrKey ? oldBrKey + '' : oldBrKey,
         value: value ? value + '' : value,
       }).unwrap()
+      notifications.show({
+        title: 'Doc bridges updated successfully',
+        message:
+          value ?
+            oldBrKey ? `Updated the bridge key ${oldBrKey} to ${value}`
+            : `Added the bridge key ${value} to the doc`
+          : `Bridge key ${oldBrKey} was deleted from the doc`,
+        position: 'top-center',
+        color: 'green',
+      })
     } catch (err) {
-      console.log(err)
+      notifications.show({
+        title: `${err}`,
+        message:
+          'Something went wrong when trying to link an asset, please reach out to andrew.ao@dot.ca.gov',
+        position: 'top-center',
+        color: 'red',
+      })
     }
   }
-
-  notifications.show({
-    title: 'Arrived at doc approval',
-    message: 'User authorized',
-  })
 
   return (
     <div className="pdf-approval">
@@ -120,14 +150,25 @@ export const DocApproval = () => {
             handleUpdateDoc={handleUpdateDoc}
             handleUpdateDocBridge={handleUpdateDocBridge}
           />
-          <RejectToaster docId="hllo" />
+          <Button
+            onClick={() =>
+              notifications.show({
+                title: 'Testing notification feature',
+                message: 'Something should pop up',
+                position: 'top-center',
+                color: 'red',
+              })
+            }
+          >
+            Test notification
+          </Button>
         </div>
       )}
       {pdf && (
         <div className="pdf-viewer">
           {draftEmail && (
             <Rejection
-              brKey={pdf.brKeys[0]}
+              brKeys={pdf.brKeys}
               docId={pdf.docId}
               fileName={pdf.filename}
               handleCancel={() => setDraftEmail(false)}
@@ -147,8 +188,13 @@ export const DocApproval = () => {
               >
                 Previous
               </Button>
-              <Button bg="#495057" onClick={() => setIndex(index + 1)}>
-                Next/Skip
+              <Button
+                bg="#495057"
+                onClick={() => setIndex(index + 1)}
+                // @ts-ignore
+                disabled={index === pdfs.length - 1}
+              >
+                Next
               </Button>
               <Button
                 disabled={
