@@ -51,8 +51,6 @@ export const DocApproval = () => {
         position: 'top-center',
         color: 'green',
       })
-      // @ts-ignore
-      URL.revokeObjectURL(url)
     } catch (err) {
       notifications.show({
         title: `${err}`,
@@ -154,8 +152,6 @@ export const DocApproval = () => {
                 docId={pdf.docId}
                 fileName={pdf.filename}
                 handleCancel={() => setDraftEmail(false)}
-                // @ts-ignore
-                url={url}
               />
             )}
             <PdfViewer url={url} />

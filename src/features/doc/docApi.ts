@@ -118,7 +118,18 @@ export const docApi = createApi({
       },
       transformResponse: (blob: Blob) => { 
         return URL.createObjectURL(blob)
-      }
+      },
+      onCacheEntryAdded: async (_, { cacheDataLoaded, cacheEntryRemoved }) => {
+        try {
+          const { data: url } = await cacheDataLoaded
+
+          await cacheEntryRemoved
+
+          URL.revokeObjectURL(url)
+        } catch (err) {
+          console.log('error whhen disposing of blob', err)
+        }
+      },
     }),
     checkInspKey: builder.query<boolean, CheckInspKeyParams>({
       query: vm => { 

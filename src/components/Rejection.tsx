@@ -10,9 +10,8 @@ export const Rejection = (props: {
   docId: number
   fileName: string
   handleCancel: () => void
-  url: string
 }) => {
-  const { brKeys, docId, fileName, handleCancel, url } = props
+  const { brKeys, docId, fileName, handleCancel } = props
 
   const [index, setIndex] = useState<number>(0)
   const { data: vm } = useDetailsQuery(brKeys[index])
@@ -50,7 +49,6 @@ export const Rejection = (props: {
         position: 'top-center',
         color: 'green',
       })
-      URL.revokeObjectURL(url)
     } catch (err) {
       notifications.show({
         title: `${err}`,
