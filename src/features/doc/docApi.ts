@@ -2,7 +2,7 @@ import {
   createApi,
   fetchBaseQuery,
 } from '@reduxjs/toolkit/query/react'
-import { appAuth, appServer } from '../../config'
+import { appAuth, appServer, httpHeaderSecurity } from '../../config'
 import { serialize } from '../../utils/ctutils'
 
 export type CheckInspKeyParams = {
@@ -96,7 +96,7 @@ export const docApi = createApi({
     baseUrl: appServer + '/api',
     prepareHeaders: (headers) => { 
       const token = localStorage.getItem(appAuth) ?? ''
-      headers.set('x-access-token', token + '')
+      headers.set(httpHeaderSecurity, token)
     },
   }),
   tagTypes: ['docs'],
@@ -116,9 +116,9 @@ export const docApi = createApi({
           responseHandler: (response) => response.blob()
         }
       },
-      transformResponse: (response: Blob) => { 
-        return URL.createObjectURL(response)
-      },
+      transformResponse: (blob: Blob) => { 
+        return URL.createObjectURL(blob)
+      }
     }),
     checkInspKey: builder.query<boolean, CheckInspKeyParams>({
       query: vm => { 
@@ -171,8 +171,7 @@ export const docApi = createApi({
       },
       invalidatesTags: ['docs'],
     }),
-    // TODO: update return type when api finalized
-    rejectDoc: builder.mutation<RejectDocParams, RejectDocParams>({
+    rejectDoc: builder.mutation<void, RejectDocParams>({
       query: vm => { 
         return {
           url: '/admin/rejectBiris',

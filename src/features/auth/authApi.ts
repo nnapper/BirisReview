@@ -2,7 +2,7 @@ import {
   createApi,
   fetchBaseQuery,
 } from '@reduxjs/toolkit/query/react'
-import { adServer, userAuth } from '../../config'
+import { adminUserGroup, adServer, userAuth, httpHeaderSecurity } from '../../config'
 
 type AuthenticateParams = {
   snumber: string
@@ -39,8 +39,8 @@ export const authApi = createApi({
       query: () => {
         const token = localStorage.getItem(userAuth) ?? ''
         return {
-          url: '/belongs?group=App_BirisAdmin',
-          headers: { 'x-access-token': token },
+          url: '/belongs?group=' + adminUserGroup,
+          headers: { [httpHeaderSecurity]: token },
         }
       },
     }),

@@ -2,7 +2,7 @@ import {
   createApi,
   fetchBaseQuery
 } from "@reduxjs/toolkit/query/react"
-import { appAuth, bmapServer } from "../config"
+import { appAuth, bmapServer, httpHeaderSecurity } from "../config"
 
 type Abme = {
   brKey: string
@@ -29,7 +29,7 @@ export const bridgeApi = createApi({
     baseUrl: bmapServer + '/api',
     prepareHeaders: (headers) => { 
       const token = localStorage.getItem(appAuth) ?? ''
-      headers.set('x-access-token', token + '')
+      headers.set(httpHeaderSecurity, token)
     }
   }),
   endpoints: builder => ({
