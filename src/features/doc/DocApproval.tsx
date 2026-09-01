@@ -1,4 +1,4 @@
-import { Button, Text } from '@mantine/core'
+import { Button, ButtonGroup, Center, Text } from '@mantine/core'
 import {
   useApproveDocMutation,
   useFetchDocsQuery,
@@ -8,8 +8,7 @@ import {
   type BirisFileInfo,
 } from './docApi'
 import { skipToken } from '@reduxjs/toolkit/query'
-import { BirisAdminEdit } from '../../components/BirisAdminEdit/index'
-import { formatOra2Date } from '../../utils/ctutils'
+import { BirisAdminEdit } from '../../components/BirisAdminEdit'
 import { useState } from 'react'
 import { Rejection } from '../../components/Rejection'
 import { notifications } from '@mantine/notifications'
@@ -52,6 +51,8 @@ export const DocApproval = () => {
         position: 'top-center',
         color: 'green',
       })
+      // @ts-ignore
+      URL.revokeObjectURL(url)
     } catch (err) {
       notifications.show({
         title: `${err}`,
@@ -68,18 +69,12 @@ export const DocApproval = () => {
   // pdf should always be not null when this is called
   const handleUpdateDoc = async (field: keyof BirisFileInfo, value: string) => {
     console.log(`updating doc field: ${field} with the value ${value}`)
-    let transformedValue: string
-    if (field === 'createdDate') {
-      transformedValue = formatOra2Date(value + '')
-    } else {
-      transformedValue = value + ''
-    }
     try {
       await updateDocField({
         // @ts-ignore
         docId: pdf.docId,
         field,
-        value: transformedValue,
+        value,
       }).unwrap()
       notifications.show({
         title: `${field} updated successfully`,
@@ -91,7 +86,7 @@ export const DocApproval = () => {
     } catch (err) {
       notifications.show({
         title: `${err}`,
-        message: `Something went wrong when trying to update ${field}, please reach out to andrew.ao@dot.ca.gov`,
+        message: `Something went wrong when trying to update ${field}. please reach out to andrew.ao@dot.ca.gov`,
         position: 'top-center',
         color: 'red',
       })
@@ -105,7 +100,9 @@ export const DocApproval = () => {
   ) => {
     if (oldBrKey == value) return
 
-    if (oldBrKey == null && pdf != null && value != null) {
+    // check if a new bridge is already linked when adding a new bridge
+    if (!oldBrKey && value) {
+      // @ts-ignore
       const i = pdf.brKeys.indexOf(value)
       console.log('key already there?', i)
       if (i > -1) return
@@ -115,8 +112,8 @@ export const DocApproval = () => {
       await updateDocBridgeField({
         // @ts-ignore
         docId: pdf.docId,
-        oldBrKey: oldBrKey ? oldBrKey + '' : oldBrKey,
-        value: value ? value + '' : value,
+        oldBrKey,
+        value,
       }).unwrap()
       notifications.show({
         title: 'Doc bridges updated successfully',
@@ -143,81 +140,73 @@ export const DocApproval = () => {
     <div className="pdf-approval">
       {!pdf && <div>No pdfs left to approve</div>}
       {pdf && (
-        <div>
+        <>
           <BirisAdminEdit
             docInfo={pdf}
-            reportTypes={[]}
+            reportTypes={[80]}
             handleUpdateDoc={handleUpdateDoc}
             handleUpdateDocBridge={handleUpdateDocBridge}
           />
-          <Button
-            onClick={() =>
-              notifications.show({
-                title: 'Testing notification feature',
-                message: 'Something should pop up',
-                position: 'top-center',
-                color: 'red',
-              })
-            }
-          >
-            Test notification
-          </Button>
-        </div>
-      )}
-      {pdf && (
-        <div className="pdf-viewer">
-          {draftEmail && (
-            <Rejection
-              brKeys={pdf.brKeys}
-              docId={pdf.docId}
-              fileName={pdf.filename}
-              handleCancel={() => setDraftEmail(false)}
-            />
-          )}
-          <PdfViewer url={url} />
-          {!draftEmail && (
-            <div>
-              <Text>
-                {index + 1} / {pdfs?.length}
-              </Text>
-              <Button
-                bg="#495057"
-                // @ts-ignore if pdf exists so does pdfs
-                disabled={index === 0 || pdfs.length == 1}
-                onClick={() => setIndex(index - 1)}
-              >
-                Previous
-              </Button>
-              <Button
-                bg="#495057"
-                onClick={() => setIndex(index + 1)}
+          <div className="pdf-viewer">
+            {draftEmail && (
+              <Rejection
+                brKeys={pdf.brKeys}
+                docId={pdf.docId}
+                fileName={pdf.filename}
+                handleCancel={() => setDraftEmail(false)}
                 // @ts-ignore
-                disabled={index === pdfs.length - 1}
-              >
-                Next
-              </Button>
-              <Button
-                disabled={
-                  // @ts-ignore
-                  pdfs.length == 0
-                }
-                onClick={approve}
-              >
-                Approve
-              </Button>
-              <Button
-                bg="red"
-                disabled={
-                  // @ts-ignore
-                  pdfs.length == 0
-                }
-                onClick={reject}
-              >
-                Reject
-              </Button>
-            </div>
-          )}
-        </div>
+                url={url}
+              />
+            )}
+            <PdfViewer url={url} />
+            {!draftEmail && (
+              <div>
+                <Text>
+                  Reviewing {index + 1} / {pdfs?.length}
+                </Text>
+                <Center>
+                  <ButtonGroup>
+                    <Button
+                      bg="#495057"
+                      // @ts-ignore if pdf exists so does pdfs
+                      disabled={index === 0 || pdfs.length == 1}
+                      onClick={() => setIndex(index - 1)}
+                    >
+                      Previous
+                    </Button>
+                    <Button
+                      bg="#495057"
+                      onClick={() => setIndex(index + 1)}
+                      // @ts-ignore
+                      disabled={index === pdfs.length - 1}
+                    >
+                      Next
+                    </Button>
+                    <Button
+                      disabled={
+                        // @ts-ignore
+                        pdfs.length == 0
+                      }
+                      onClick={approve}
+                    >
+                      Approve
+                    </Button>
+                    <Button
+                      bg="red"
+                      disabled={
+                        // @ts-ignore
+                        pdfs.length == 0
+                      }
+                      onClick={reject}
+                    >
+                      Reject
+                    </Button>
+                  </ButtonGroup>
+                </Center>
+              </div>
+            )}
+          </div>
+        </>
       )}
     </div>
   )
