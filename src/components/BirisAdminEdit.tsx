@@ -1,14 +1,14 @@
-import { EditableField } from '../../components/EditableField'
+import { EditableField } from './EditableField'
 import { useEffect, useState } from 'react'
-import { formatOraDate } from '../../utils/ctutils'
+import { formatOraDate } from '../utils/ctutils'
 import {
   useLazyCheckInspKeyQuery,
   type CheckInspKeyParams,
   type BirisFileInfo,
-} from '../../features/doc/docApi'
-import { Alert, Grid, GridCol } from '@mantine/core'
-import { InfoIcon, WarningIcon } from '@phosphor-icons/react'
-import { LinkBridgeField } from '../EditableField/LinkBridgeField'
+} from '../features/doc/docApi'
+import { Alert, Flex, Grid, GridCol, Text } from '@mantine/core'
+import { WarningIcon } from '@phosphor-icons/react'
+import { LinkBridgeField } from './EditableField/LinkBridgeField'
 
 interface BirisAdminEditProps {
   docInfo: BirisFileInfo
@@ -55,6 +55,12 @@ export const BirisAdminEdit = (props: BirisAdminEditProps) => {
       reportTypes.includes(docTypeId) && brKeys.length > 1 ?
         'One bridge should be linked to Inspection Report'
       : '',
+    )
+
+    console.log(
+      'why does this not work',
+      reportTypes.includes(docTypeId),
+      inspKey ? inspKey.length > 0 : 'inspKey null',
     )
 
     if (
@@ -124,19 +130,6 @@ export const BirisAdminEdit = (props: BirisAdminEditProps) => {
   return (
     <div className="biris-admin-edit">
       <div>
-        {reportTypes.includes(docTypeId) && inspKeyMessage === 'matched' && (
-          <Alert
-            variant="light"
-            color="green"
-            withCloseButton
-            title="Alert title"
-            icon={<InfoIcon />}
-          >
-            Inspection Date and InspKey match
-          </Alert>
-        )}
-      </div>
-      <div>
         {cvalues.map((_, i) => (
           <EditableField
             key={i}
@@ -171,19 +164,25 @@ export const BirisAdminEdit = (props: BirisAdminEditProps) => {
             }
           />
         )}
+        <Flex>
+          {reportTypes.includes(docTypeId) &&
+            (inspKeyMessage === 'matched' ?
+              <Text bg="#d3f9d8" c="#2b8a3e" w="100%">
+                Inspection Date and InspKey match
+              </Text>
+            : <Text bg="#ffe3e3" c="#c92a2a" w="100%">
+                Inspection Date and InspKey do not match
+              </Text>)}
+        </Flex>
       </div>
       <h2>Assets Linked</h2>
       <div>
         {tooManyBridgesTypeIdError !== '' && (
-          <Alert
-            variant="light"
-            color="red"
-            withCloseButton
-            title="Alert title"
-            icon={<WarningIcon />}
-          >
-            Bridge Report should only be linked to 1 bridge.
-          </Alert>
+          <Flex>
+            <Text bg="#ffe3e3" c="#c92a2a" w="100%">
+              Bridge Report should only be linked to 1 bridge.
+            </Text>
+          </Flex>
         )}
 
         {brKeys.length === 0 && (
