@@ -53,17 +53,6 @@ export const formatOraDate = (date: string | null) => {
   return p[2] + "-" + months[p[1]] + "-" + p[0]
 }
 
-const FOLDER_KEY = "_fuhao-biris-admin-folder_"
-
-export const lastSelectedFolder = () => {
-  var p = localStorage.getItem(FOLDER_KEY)
-  return p == null ? "c:\\" : p
-}
-
-export const saveSelectedFolder = (f: string) => {
-  localStorage.setItem(FOLDER_KEY, f)
-}
-
 export const isDateObj = (obj: any) =>
   Object.prototype.toString.call(obj) === "[object Date]" && !isNaN(obj)
 

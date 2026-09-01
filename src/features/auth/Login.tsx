@@ -68,7 +68,6 @@ export const Login = () => {
   }
 
   const appAuthToken = localStorage.getItem(appAuth)
-
   useEffect(() => {
     if (appAuthToken) {
       dispatch(setAuthUser({ token: appAuthToken }))
