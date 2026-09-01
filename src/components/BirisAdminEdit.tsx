@@ -57,12 +57,6 @@ export const BirisAdminEdit = (props: BirisAdminEditProps) => {
       : '',
     )
 
-    console.log(
-      'why does this not work',
-      reportTypes.includes(docTypeId),
-      inspKey ? inspKey.length > 0 : 'inspKey null',
-    )
-
     if (
       reportTypes.includes(docTypeId) &&
       inspKey != null &&
