@@ -122,9 +122,7 @@ export const docApi = createApi({
       onCacheEntryAdded: async (_, { cacheDataLoaded, cacheEntryRemoved }) => {
         try {
           const { data: url } = await cacheDataLoaded
-
           await cacheEntryRemoved
-
           URL.revokeObjectURL(url)
         } catch (err) {
           console.log('error whhen disposing of blob', err)
