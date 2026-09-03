@@ -122,7 +122,9 @@ export const docApi = createApi({
       onCacheEntryAdded: async (_, { cacheDataLoaded, cacheEntryRemoved }) => {
         try {
           const { data: url } = await cacheDataLoaded
+          console.log('cacheDataLoaded', url)
           await cacheEntryRemoved
+          console.log('ready to remove URL', url)
           URL.revokeObjectURL(url)
         } catch (err) {
           console.log('error whhen disposing of blob', err)
@@ -143,6 +145,13 @@ export const docApi = createApi({
         }
       }
     }),
+    reportDocTypes: builder.query<number[], void>({
+      query: () => { 
+        return {
+          url: '/docparams/reportDocTypes',
+        }
+      }
+    }),    
     search: builder.query<AssetInfo[], SearchParams>({
       query: brKey => { 
         return {
@@ -197,6 +206,7 @@ export const {
   useFetchDocsQuery,
   useLoadDocQuery,
   useDocTypesQuery,
+  useReportDocTypesQuery,
   useLazyCheckInspKeyQuery,
   useLazySearchQuery,
   useUpdateDocFieldMutation,
