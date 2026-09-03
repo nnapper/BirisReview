@@ -31,7 +31,8 @@ export const apiLoading = (state: RootState) => {
   ]
 
   return apiSlices.some(api =>
-    Object.values(api.queries).some(q => q?.status === 'pending') ||
+    Object.values(api.queries).some(q => q?.status === 'pending'
+      && q?.endpointName !== 'search') ||
     Object.values(api.mutations).some(m => m?.status === 'pending')
   )
 }
