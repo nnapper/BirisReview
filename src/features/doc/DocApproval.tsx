@@ -3,6 +3,7 @@ import {
   useApproveDocMutation,
   useFetchDocsQuery,
   useLoadDocQuery,
+  useReportDocTypesQuery,
   useUpdateDocBridgesFieldMutation,
   useUpdateDocFieldMutation,
   type BirisFileInfo,
@@ -10,7 +11,7 @@ import {
 import { skipToken } from '@reduxjs/toolkit/query'
 import { BirisAdminEdit } from '../../components/BirisAdminEdit'
 import { useState } from 'react'
-import { Rejection } from '../../components/Rejection'
+import { DocRejection } from './DocRejection'
 import { notifications } from '@mantine/notifications'
 
 type PdfViewerProps = {
@@ -26,11 +27,12 @@ const PdfViewer = ({ url }: PdfViewerProps) => {
 export const DocApproval = () => {
   const { data: pdfs } = useFetchDocsQuery()
   const [index, setIndex] = useState<number>(0)
-
   const pdf =
     pdfs && pdfs.length != 0 && index < pdfs.length ? pdfs[index] : null
+
   const { data: url } = useLoadDocQuery(pdf ? pdf.docId : skipToken)
 
+  const { data: reportTypes } = useReportDocTypesQuery()
   const [updateDocField] = useUpdateDocFieldMutation()
   const [approveDoc] = useApproveDocMutation()
   // pdf should always be not null when this is called
@@ -38,7 +40,7 @@ export const DocApproval = () => {
     try {
       await approveDoc({
         // @ts-ignore
-        docId: pdf.docID,
+        docId: pdf.docId,
         field: 'pageCount',
         // @ts-ignore
         value: pdf.pageCount + '',
@@ -141,13 +143,13 @@ export const DocApproval = () => {
         <>
           <BirisAdminEdit
             docInfo={pdf}
-            reportTypes={[80]}
+            reportTypes={reportTypes ?? []}
             handleUpdateDoc={handleUpdateDoc}
             handleUpdateDocBridge={handleUpdateDocBridge}
           />
           <div className="pdf-viewer">
             {draftEmail && (
-              <Rejection
+              <DocRejection
                 brKeys={pdf.brKeys}
                 docId={pdf.docId}
                 fileName={pdf.filename}
