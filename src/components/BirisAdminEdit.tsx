@@ -165,7 +165,7 @@ export const BirisAdminEdit = (props: BirisAdminEditProps) => {
                 Inspection Date and InspKey match
               </Text>
             : <Text bg="#ffe3e3" c="#c92a2a" w="100%">
-                Inspection Date and InspKey do not match
+                Inspection Key and Date do not match
               </Text>)}
         </Flex>
       </div>
@@ -174,7 +174,7 @@ export const BirisAdminEdit = (props: BirisAdminEditProps) => {
         {tooManyBridgesTypeIdError !== '' && (
           <Flex>
             <Text bg="#ffe3e3" c="#c92a2a" w="100%">
-              Bridge Report should only be linked to 1 bridge.
+              Inspection Report should only be linked to 1 bridge.
             </Text>
           </Flex>
         )}
