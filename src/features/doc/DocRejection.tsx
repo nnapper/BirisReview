@@ -1,11 +1,11 @@
 import { Button, Center, Text, Textarea } from '@mantine/core'
 import { PaperPlaneRightIcon, XCircleIcon } from '@phosphor-icons/react'
 import { useEffect, useState } from 'react'
-import { useDetailsQuery } from '../features/bridgeApi'
-import { useRejectDocMutation } from '../features/doc/docApi'
+import { useDetailsQuery } from '../bridgeApi'
+import { useRejectDocMutation } from './docApi'
 import { notifications } from '@mantine/notifications'
 
-export const Rejection = (props: {
+const DocRejection = (props: {
   brKeys: string[]
   docId: number
   fileName: string
@@ -16,19 +16,21 @@ export const Rejection = (props: {
   const [index, setIndex] = useState<number>(0)
   const { data: vm } = useDetailsQuery(brKeys[index])
 
-  const [toContacts, setToContacts] = useState<string>('Loading email')
-  const [ccContacts, setCcContacts] = useState<string>('Loading email')
+  const [toContacts, setToContacts] = useState<string>('')
+  const [ccContacts, setCcContacts] = useState<string>('')
   const [body, setBody] = useState<string>('')
 
-  useEffect(() => {
-    if (vm && !vm.assignedAbme) setIndex(index + 1)
-    else if (vm) {
-      setToContacts(vm.assignedAbme.abmeEmail)
-      setCcContacts(vm.assignedAbme.supervisorEmail)
-    }
-  }, [vm])
-
   const [reject] = useRejectDocMutation()
+
+  useEffect(() => {
+    if (vm == null || vm.assignedAbme == null) {
+      if (index < brKeys.length - 1) setIndex(index + 1)
+      return
+    }
+
+    setToContacts(vm.assignedAbme.abmeEmail)
+    setCcContacts(vm.assignedAbme.supervisorEmail)
+  }, [vm])
 
   const handleReject = async () => {
     try {
@@ -37,7 +39,7 @@ export const Rejection = (props: {
           from: 'testing',
           toContacts: toContacts.split(/[,;\s]/),
           ccContacts: ccContacts.split(/[,;\s]/),
-          subject: `Biris ${fileName}`,
+          subject: `Biris Rejection ${fileName}`,
           body,
         },
         docId,
@@ -67,6 +69,7 @@ export const Rejection = (props: {
         onChange={e => setToContacts(e.currentTarget.value)}
         minRows={1}
         autosize
+        placeholder="loading..."
       />
       <Textarea
         label="Cc"
@@ -74,6 +77,7 @@ export const Rejection = (props: {
         onChange={e => setCcContacts(e.currentTarget.value)}
         minRows={1}
         autosize
+        placeholder="cc email address..."
       />
       <Text mt="sm" size="md">
         Subject: Biris {fileName}
@@ -88,7 +92,10 @@ export const Rejection = (props: {
         error={body === ''}
       />
       <Center>
-        <Button onClick={handleReject} disabled={body === ''}>
+        <Button
+          onClick={handleReject}
+          disabled={body === '' || toContacts.trim().length === 0}
+        >
           Send <PaperPlaneRightIcon />
         </Button>
         <Button bg="#495057" onClick={handleCancel}>
@@ -98,3 +105,5 @@ export const Rejection = (props: {
     </div>
   )
 }
+
+export default DocRejection
