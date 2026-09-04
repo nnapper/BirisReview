@@ -34,7 +34,7 @@ export const bridgeApi = createApi({
   }),
   endpoints: builder => ({
     details: builder.query<DetailsReturn, string>({
-      query: brKey => { 
+      query: brKey => {
         return {
           url: `/bridge/details?b=${brKey}`
         }
@@ -43,4 +43,4 @@ export const bridgeApi = createApi({
   })
 })
 
-export const { useDetailsQuery } = bridgeApi
+export const { useDetailsQuery, useLazyDetailsQuery } = bridgeApi

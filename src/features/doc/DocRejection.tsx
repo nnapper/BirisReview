@@ -5,7 +5,7 @@ import { useDetailsQuery } from '../bridgeApi'
 import { useRejectDocMutation } from './docApi'
 import { notifications } from '@mantine/notifications'
 
-const DocRejection = (props: {
+export const DocRejection = (props: {
   brKeys: string[]
   docId: number
   fileName: string
@@ -105,5 +105,3 @@ const DocRejection = (props: {
     </div>
   )
 }
-
-export default DocRejection
